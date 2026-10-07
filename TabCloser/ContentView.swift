@@ -31,6 +31,18 @@ final class TabListModel: ObservableObject {
         }
     }
 
+    func open(_ tab: ChromeTab) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                try ChromeTabs.activateTab(tab)
+            } catch {
+                DispatchQueue.main.async {
+                    self.statusMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
     func close(_ tab: ChromeTab) {
         closeAll([tab])
     }
@@ -95,11 +107,18 @@ struct ContentView: View {
                         Section {
                             ForEach(section.tabs) { tab in
                                 HStack(spacing: 10) {
-                                    Text(tab.title)
-                                        .lineLimit(1)
-                                        .truncationMode(.tail)
-                                        .layoutPriority(1)
-                                        .help(tab.title)
+                                    Button {
+                                        model.open(tab)
+                                    } label: {
+                                        Text(tab.title)
+                                            .lineLimit(1)
+                                            .truncationMode(.tail)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .layoutPriority(1)
+                                    .help("Open tab")
 
                                     Text(tab.url)
                                         .font(.callout)

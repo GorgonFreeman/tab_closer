@@ -61,6 +61,27 @@ enum ChromeTabs {
         return parseTabs(raw)
     }
 
+    static func activateTab(_ tab: ChromeTab) throws {
+        guard isChromeRunning() else {
+            throw ChromeTabsError.chromeNotRunning
+        }
+
+        let script = """
+        tell application "Google Chrome"
+            activate
+            if (count of windows) >= \(tab.windowIndex) then
+                set index of window \(tab.windowIndex) to 1
+                tell window 1
+                    if (count of tabs) >= \(tab.tabIndex) then
+                        set active tab index to \(tab.tabIndex)
+                    end if
+                end tell
+            end if
+        end tell
+        """
+        _ = try runAppleScript(script)
+    }
+
     static func closeTab(_ tab: ChromeTab) throws {
         guard isChromeRunning() else {
             throw ChromeTabsError.chromeNotRunning
