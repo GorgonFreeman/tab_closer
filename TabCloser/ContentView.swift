@@ -91,6 +91,14 @@ struct ContentView: View {
                                 HStack(spacing: 10) {
                                     Text(tab.title)
                                         .lineLimit(1)
+                                        .truncationMode(.tail)
+                                        .layoutPriority(1)
+                                        .help(tab.title)
+
+                                    Text(tab.url)
+                                        .font(.callout)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
                                         .truncationMode(.middle)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                         .help(tab.url)
