@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 
 struct ChromeTab: Identifiable, Hashable {
@@ -27,12 +28,9 @@ enum ChromeTabs {
     private static let fieldSeparator = "\u{001f}"
 
     static func isChromeRunning() -> Bool {
-        let script = """
-        tell application "System Events"
-            return (name of processes) contains "Google Chrome"
-        end tell
-        """
-        return (try? runAppleScript(script))?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "true"
+        NSWorkspace.shared.runningApplications.contains {
+            $0.bundleIdentifier == "com.google.Chrome"
+        }
     }
 
     static func fetchTabs() throws -> [ChromeTab] {
