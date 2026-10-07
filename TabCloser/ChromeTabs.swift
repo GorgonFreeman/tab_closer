@@ -80,6 +80,24 @@ enum ChromeTabs {
         _ = try runAppleScript(script)
     }
 
+    /// Closes tabs highest-index-first so AppleScript indices stay valid.
+    static func closeTabs(_ tabs: [ChromeTab]) throws {
+        guard isChromeRunning() else {
+            throw ChromeTabsError.chromeNotRunning
+        }
+
+        let ordered = tabs.sorted {
+            if $0.windowIndex != $1.windowIndex {
+                return $0.windowIndex > $1.windowIndex
+            }
+            return $0.tabIndex > $1.tabIndex
+        }
+
+        for tab in ordered {
+            try closeTab(tab)
+        }
+    }
+
     private static func parseTabs(_ raw: String) -> [ChromeTab] {
         let lines = raw.split(whereSeparator: \.isNewline)
         var tabs: [ChromeTab] = []

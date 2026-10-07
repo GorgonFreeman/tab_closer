@@ -32,9 +32,15 @@ final class TabListModel: ObservableObject {
     }
 
     func close(_ tab: ChromeTab) {
+        closeAll([tab])
+    }
+
+    func closeAll(_ tabs: [ChromeTab]) {
+        guard !tabs.isEmpty else { return }
+
         DispatchQueue.global(qos: .userInitiated).async {
             do {
-                try ChromeTabs.closeTab(tab)
+                try ChromeTabs.closeTabs(tabs)
                 DispatchQueue.main.async {
                     self.refresh()
                 }
@@ -86,7 +92,7 @@ struct ContentView: View {
             } else {
                 List {
                     ForEach(model.sections, id: \.domain) { section in
-                        Section(section.domain) {
+                        Section {
                             ForEach(section.tabs) { tab in
                                 HStack(spacing: 10) {
                                     Text(tab.title)
@@ -116,6 +122,25 @@ struct ContentView: View {
                                     .help("Close tab")
                                 }
                                 .padding(.vertical, 2)
+                            }
+                        } header: {
+                            HStack(spacing: 10) {
+                                Text(section.domain)
+                                    .font(.headline)
+                                    .textCase(nil)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                Button {
+                                    model.closeAll(section.tabs)
+                                } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundStyle(.secondary)
+                                        .frame(width: 22, height: 22)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                .help("Close all tabs for \(section.domain)")
                             }
                         }
                     }
