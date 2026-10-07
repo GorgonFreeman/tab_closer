@@ -113,20 +113,22 @@ struct ContentView: View {
                                         Text(tab.title)
                                             .lineLimit(1)
                                             .truncationMode(.tail)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
                                             .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.plain)
-                                    .layoutPriority(1)
                                     .help("Open tab")
 
-                                    Text(tab.url)
-                                        .font(.callout)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                        .truncationMode(.middle)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .help(tab.url)
+                                    if tab.url != tab.title {
+                                        Text(tab.url)
+                                            .font(.callout)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(1)
+                                            .truncationMode(.middle)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .help(tab.url)
+                                    } else {
+                                        Spacer(minLength: 0)
+                                    }
 
                                     Button {
                                         model.close(tab)
