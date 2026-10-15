@@ -101,6 +101,47 @@ enum ChromeTabs {
         _ = try runAppleScript(script)
     }
 
+    /// Bookmarks the tab under Bookmarks Bar → "TabCloser save for later", then closes it.
+    static func bookmarkAndCloseTab(_ tab: ChromeTab) throws {
+        guard isChromeRunning() else {
+            throw ChromeTabsError.chromeNotRunning
+        }
+
+        let folderName = "TabCloser save for later"
+        let title = escapeAppleScriptString(tab.title)
+        let url = escapeAppleScriptString(tab.url)
+
+        let script = """
+        tell application "Google Chrome"
+            set folderName to "\(folderName)"
+            set bar to bookmarks bar
+            set targetFolder to missing value
+            repeat with f in bookmark folders of bar
+                if title of f is folderName then
+                    set targetFolder to f
+                    exit repeat
+                end if
+            end repeat
+            if targetFolder is missing value then
+                tell bar
+                    set targetFolder to make new bookmark folder with properties {title:folderName}
+                end tell
+            end if
+            tell targetFolder
+                make new bookmark item with properties {title:"\(title)", URL:"\(url)"}
+            end tell
+            if (count of windows) >= \(tab.windowIndex) then
+                tell window \(tab.windowIndex)
+                    if (count of tabs) >= \(tab.tabIndex) then
+                        close tab \(tab.tabIndex)
+                    end if
+                end tell
+            end if
+        end tell
+        """
+        _ = try runAppleScript(script)
+    }
+
     /// Closes tabs highest-index-first so AppleScript indices stay valid.
     static func closeTabs(_ tabs: [ChromeTab]) throws {
         guard isChromeRunning() else {
@@ -117,6 +158,12 @@ enum ChromeTabs {
         for tab in ordered {
             try closeTab(tab)
         }
+    }
+
+    private static func escapeAppleScriptString(_ value: String) -> String {
+        value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
     }
 
     private static func parseTabs(_ raw: String) -> [ChromeTab] {

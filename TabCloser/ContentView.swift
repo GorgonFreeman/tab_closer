@@ -47,6 +47,22 @@ final class TabListModel: ObservableObject {
         closeAll([tab])
     }
 
+    func saveForLater(_ tab: ChromeTab) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                try ChromeTabs.bookmarkAndCloseTab(tab)
+                DispatchQueue.main.async {
+                    self.refresh()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.statusMessage = error.localizedDescription
+                    self.refresh()
+                }
+            }
+        }
+    }
+
     func closeAll(_ tabs: [ChromeTab]) {
         guard !tabs.isEmpty else { return }
 
@@ -107,6 +123,18 @@ struct ContentView: View {
                         Section {
                             ForEach(section.tabs) { tab in
                                 HStack(spacing: 10) {
+                                    Button {
+                                        model.saveForLater(tab)
+                                    } label: {
+                                        Image(systemName: "bookmark")
+                                            .font(.system(size: 11, weight: .semibold))
+                                            .foregroundStyle(.secondary)
+                                            .frame(width: 22, height: 22)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+                                    .help("Save for later and close tab")
+
                                     Button {
                                         model.open(tab)
                                     } label: {
